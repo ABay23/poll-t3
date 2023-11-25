@@ -17,12 +17,21 @@ export const postRouter = createTRPCRouter({
         pollId: z.string(),
       }),
     )
-    .query(({ ctx, input }) => {
-      return ctx.db.poll.findUnique({
-        where: {
-          id: input.pollId,
-        },
-      });
+    .query(async ({ ctx, input }) => {
+      try {
+        const poll = await ctx.db.poll.findUnique({
+          where: {
+            id: input.pollId,
+          },
+        });
+        if (!poll) {
+          throw new Error("Poll not found");
+        }
+        return poll;
+      } catch (error) {
+        console.error("Error fetching poll:", error);
+        throw new Error("Failed to fetch poll");
+      }
     }),
 
   // getLatest: publicProcedure.query(({ ctx }) => {
